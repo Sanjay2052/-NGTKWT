@@ -19,6 +19,8 @@ export default function Navbar() {
         top: 0,
         left: 0,
         right: 0,
+        width: '100%',
+        boxSizing: 'border-box',
         zIndex: 1000,
         transition: 'all 0.3s ease',
         background: 'rgba(255, 255, 255, 0.95)',

@@ -49,7 +49,7 @@ html,
 body,
 #root {
   width: 100%;
-  max-width: 100vw;
+  max-width: 100%;
   overflow-x: hidden !important;
   margin: 0;
   padding: 0;
@@ -63,7 +63,7 @@ body {
 
 section {
   width: 100%;
-  max-width: 100vw;
+  max-width: 100%;
   box-sizing: border-box;
   overflow-x: hidden;
 }

@@ -22,8 +22,8 @@ export default function Footer({ onOpenLegal }) {
                 src={logo} 
                 alt="NGTKWT Logo" 
                 style={{ 
-                  height: '3.4rem', 
-                  maxHeight: '56px', 
+                  height: '3.2rem', 
+                  maxHeight: '52px', 
                   width: 'auto', 
                   objectFit: 'contain',
                   display: 'block' 
@@ -35,10 +35,10 @@ export default function Footer({ onOpenLegal }) {
               Connecting enterprise energy companies with highly qualified technical professionals across the global oil and gas industry.
             </p>
 
-            <div style={{ display: 'flex', gap: '0.75rem' }}>
-              <a href="https://linkedin.com" target="_blank" rel="noreferrer" style={{ color: 'var(--color-gold-primary)' }}><Building2 size={18} /></a>
-              <a href="https://x.com" target="_blank" rel="noreferrer" style={{ color: 'var(--color-gold-primary)' }}><Globe2 size={18} /></a>
-              <a href="https://facebook.com" target="_blank" rel="noreferrer" style={{ color: 'var(--color-gold-primary)' }}><Share2 size={18} /></a>
+            <div style={{ display: 'flex', gap: '0.6rem' }}>
+              <a href="https://linkedin.com" target="_blank" rel="noreferrer" style={{ color: 'var(--color-navy-950)', background: 'rgba(212, 175, 55, 0.12)', border: '1px solid rgba(212, 175, 55, 0.3)', width: '36px', height: '36px', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}><Building2 size={17} style={{ color: 'var(--color-gold-primary)' }} /></a>
+              <a href="https://x.com" target="_blank" rel="noreferrer" style={{ color: 'var(--color-navy-950)', background: 'rgba(212, 175, 55, 0.12)', border: '1px solid rgba(212, 175, 55, 0.3)', width: '36px', height: '36px', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}><Globe2 size={17} style={{ color: 'var(--color-gold-primary)' }} /></a>
+              <a href="https://facebook.com" target="_blank" rel="noreferrer" style={{ color: 'var(--color-navy-950)', background: 'rgba(212, 175, 55, 0.12)', border: '1px solid rgba(212, 175, 55, 0.3)', width: '36px', height: '36px', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}><Share2 size={17} style={{ color: 'var(--color-gold-primary)' }} /></a>
             </div>
           </div>
 
