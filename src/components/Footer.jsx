@@ -35,10 +35,120 @@ export default function Footer({ onOpenLegal }) {
               Connecting enterprise energy companies with highly qualified technical professionals across the global oil and gas industry.
             </p>
 
-            <div style={{ display: 'flex', gap: '0.6rem' }}>
-              <a href="https://linkedin.com" target="_blank" rel="noreferrer" style={{ color: 'var(--color-navy-950)', background: 'rgba(212, 175, 55, 0.12)', border: '1px solid rgba(212, 175, 55, 0.3)', width: '36px', height: '36px', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}><Building2 size={17} style={{ color: 'var(--color-gold-primary)' }} /></a>
-              <a href="https://x.com" target="_blank" rel="noreferrer" style={{ color: 'var(--color-navy-950)', background: 'rgba(212, 175, 55, 0.12)', border: '1px solid rgba(212, 175, 55, 0.3)', width: '36px', height: '36px', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}><Globe2 size={17} style={{ color: 'var(--color-gold-primary)' }} /></a>
-              <a href="https://facebook.com" target="_blank" rel="noreferrer" style={{ color: 'var(--color-navy-950)', background: 'rgba(212, 175, 55, 0.12)', border: '1px solid rgba(212, 175, 55, 0.3)', width: '36px', height: '36px', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}><Share2 size={17} style={{ color: 'var(--color-gold-primary)' }} /></a>
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              {/* LinkedIn */}
+              <a 
+                href="https://linkedin.com" 
+                target="_blank" 
+                rel="noreferrer" 
+                aria-label="LinkedIn"
+                style={{ 
+                  width: '42px', 
+                  height: '42px', 
+                  borderRadius: '0.75rem', 
+                  background: 'rgba(212, 175, 55, 0.12)', 
+                  border: '1.5px solid rgba(212, 175, 55, 0.35)', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  textDecoration: 'none',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 2px 8px rgba(10,37,64,0.04)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--color-gold-primary)';
+                  e.currentTarget.style.transform = 'translateY(-3px)';
+                  const svg = e.currentTarget.querySelector('svg');
+                  if (svg) svg.setAttribute('stroke', '#0A2540');
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(212, 175, 55, 0.12)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  const svg = e.currentTarget.querySelector('svg');
+                  if (svg) svg.setAttribute('stroke', 'var(--color-gold-primary)');
+                }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+                  <rect x="2" y="9" width="4" height="12"/>
+                  <circle cx="4" cy="4" r="2"/>
+                </svg>
+              </a>
+
+              {/* X / Twitter */}
+              <a 
+                href="https://x.com" 
+                target="_blank" 
+                rel="noreferrer" 
+                aria-label="X (Twitter)"
+                style={{ 
+                  width: '42px', 
+                  height: '42px', 
+                  borderRadius: '0.75rem', 
+                  background: 'rgba(212, 175, 55, 0.12)', 
+                  border: '1.5px solid rgba(212, 175, 55, 0.35)', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  textDecoration: 'none',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 2px 8px rgba(10,37,64,0.04)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--color-gold-primary)';
+                  e.currentTarget.style.transform = 'translateY(-3px)';
+                  const svg = e.currentTarget.querySelector('svg');
+                  if (svg) svg.setAttribute('stroke', '#0A2540');
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(212, 175, 55, 0.12)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  const svg = e.currentTarget.querySelector('svg');
+                  if (svg) svg.setAttribute('stroke', 'var(--color-gold-primary)');
+                }}
+              >
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 4l11.733 16h4.267l-11.733 -16z" />
+                  <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" />
+                </svg>
+              </a>
+
+              {/* Facebook */}
+              <a 
+                href="https://facebook.com" 
+                target="_blank" 
+                rel="noreferrer" 
+                aria-label="Facebook"
+                style={{ 
+                  width: '42px', 
+                  height: '42px', 
+                  borderRadius: '0.75rem', 
+                  background: 'rgba(212, 175, 55, 0.12)', 
+                  border: '1.5px solid rgba(212, 175, 55, 0.35)', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  textDecoration: 'none',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 2px 8px rgba(10,37,64,0.04)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--color-gold-primary)';
+                  e.currentTarget.style.transform = 'translateY(-3px)';
+                  const svg = e.currentTarget.querySelector('svg');
+                  if (svg) svg.setAttribute('stroke', '#0A2540');
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(212, 175, 55, 0.12)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  const svg = e.currentTarget.querySelector('svg');
+                  if (svg) svg.setAttribute('stroke', 'var(--color-gold-primary)');
+                }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+                </svg>
+              </a>
             </div>
           </div>
 
