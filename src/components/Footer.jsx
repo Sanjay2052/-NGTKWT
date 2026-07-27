@@ -12,7 +12,7 @@ export default function Footer({ onOpenLegal }) {
       color: 'var(--color-gray-600)',
       fontSize: '0.875rem'
     }}>
-      <div className="container">
+      <div className="container-fluid">
 
         <div style={{ marginBottom: '3.5rem' }} className="footer-grid">
 

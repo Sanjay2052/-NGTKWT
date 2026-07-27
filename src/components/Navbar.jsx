@@ -29,7 +29,7 @@ export default function Navbar() {
         boxShadow: scrolled ? '0 4px 20px rgba(0,0,0,0.06)' : 'none'
       }}
     >
-      <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '4.8rem' }}>
+      <div className="container-fluid" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '4.8rem' }}>
         
         {/* Brand Logo */}
         <a href="#" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
