@@ -7,7 +7,7 @@ export default function SearchableSelect({
   onChange = () => {},
   placeholder = 'Select option...',
   searchPlaceholder = 'Search options...',
-  accentColor = '#F95738', // brand default
+  accentColor = '#D4AF37', // brand gold default
   required = false
 }) {
   const [isOpen, setIsOpen] = useState(false);

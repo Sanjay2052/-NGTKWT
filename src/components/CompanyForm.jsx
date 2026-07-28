@@ -326,7 +326,7 @@ export default function CompanyForm({ onSubmissionSuccess }) {
                       onChange={(val) => setFormData({ ...formData, jobCategory: val })}
                       placeholder="Select Job Category"
                       searchPlaceholder="Search 50+ categories (e.g. Drilling, Subsea, Refinery)..."
-                      accentColor="#F95738"
+                      accentColor="#D4AF37"
                     />
                   </div>
 
