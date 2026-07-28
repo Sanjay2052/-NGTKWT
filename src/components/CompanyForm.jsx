@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Briefcase, Building, Send, CheckCircle2 } from 'lucide-react';
 import { sendToGoogleSheets } from '../config/googleConfig';
+import SearchableSelect from './SearchableSelect';
+import { JOB_CATEGORIES } from '../data/jobData';
 
 export default function CompanyForm({ onSubmissionSuccess }) {
   const [formData, setFormData] = useState({
@@ -11,7 +13,7 @@ export default function CompanyForm({ onSubmissionSuccess }) {
     country: 'Kuwait',
     jobTitle: '',
     workersNeeded: '1-5 Workers',
-    jobCategory: 'Drilling Operations',
+    jobCategory: 'Drilling & Well Operations',
     projectLocation: '',
     message: ''
   });
@@ -19,17 +21,6 @@ export default function CompanyForm({ onSubmissionSuccess }) {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-  const jobCategories = [
-    'Drilling Operations',
-    'Offshore Engineering & Subsea',
-    'HSE & Safety Compliance',
-    'Maintenance & Electrical',
-    'Refinery & Downstream Ops',
-    'EPC & Construction',
-    'Executive Leadership',
-    'Marine & Vessel Logistics'
-  ];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -140,7 +131,7 @@ export default function CompanyForm({ onSubmissionSuccess }) {
                       country: 'Kuwait',
                       jobTitle: '',
                       workersNeeded: '1-5 Workers',
-                      jobCategory: 'Drilling Operations',
+                      jobCategory: 'Drilling & Well Operations',
                       projectLocation: '',
                       message: ''
                     });
@@ -329,23 +320,14 @@ export default function CompanyForm({ onSubmissionSuccess }) {
                     <label style={{ display: 'block', color: 'var(--color-navy-950)', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>
                       Job Category
                     </label>
-                    <select
+                    <SearchableSelect
+                      options={JOB_CATEGORIES}
                       value={formData.jobCategory}
-                      onChange={(e) => setFormData({ ...formData, jobCategory: e.target.value })}
-                      style={{
-                        width: '100%',
-                        padding: '0.75rem 1rem',
-                        borderRadius: '0.5rem',
-                        background: '#FFFFFF',
-                        border: '1px solid #CBD5E1',
-                        color: 'var(--color-navy-950)',
-                        outline: 'none'
-                      }}
-                    >
-                      {jobCategories.map((cat, i) => (
-                        <option key={i} value={cat}>{cat}</option>
-                      ))}
-                    </select>
+                      onChange={(val) => setFormData({ ...formData, jobCategory: val })}
+                      placeholder="Select Job Category"
+                      searchPlaceholder="Search 50+ categories (e.g. Drilling, Subsea, Refinery)..."
+                      accentColor="#F95738"
+                    />
                   </div>
 
                 </div>

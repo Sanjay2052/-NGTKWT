@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { UserCheck, Upload, CheckCircle2, Send, AlertCircle, Paperclip } from 'lucide-react';
 import { sendToGoogleSheets } from '../config/googleConfig';
+import SearchableSelect from './SearchableSelect';
+import { WORKER_POSITIONS } from '../data/jobData';
 
 export default function WorkerForm({ onSubmissionSuccess }) {
   const [formData, setFormData] = useState({
@@ -18,17 +20,6 @@ export default function WorkerForm({ onSubmissionSuccess }) {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-  const positions = [
-    'Drilling Engineer / Supervisor',
-    'Offshore Subsea Technician',
-    'HSE Safety Officer / Lead',
-    'Rig Mechanic & Electrician',
-    'Process Operator (Refinery/LNG)',
-    'ROV Pilot & Inspector',
-    'QA/QC Piping Inspector',
-    'Marine Engineer / Captain'
-  ];
 
   const readFileAsBase64 = (file) => {
     return new Promise((resolve, reject) => {
@@ -298,24 +289,15 @@ export default function WorkerForm({ onSubmissionSuccess }) {
                     <label style={{ display: 'block', color: 'var(--color-navy-950)', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>
                       Position Applying For *
                     </label>
-                    <select
+                    <SearchableSelect
+                      options={WORKER_POSITIONS}
                       value={formData.position}
-                      onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                      style={{
-                        width: '100%',
-                        padding: '0.75rem 1rem',
-                        borderRadius: '0.5rem',
-                        background: '#FFFFFF',
-                        border: '1px solid #CBD5E1',
-                        color: 'var(--color-navy-950)',
-                        outline: 'none'
-                      }}
-                    >
-                      <option value="">Select Primary Role</option>
-                      {positions.map((p, idx) => (
-                        <option key={idx} value={p}>{p}</option>
-                      ))}
-                    </select>
+                      onChange={(val) => setFormData({ ...formData, position: val })}
+                      placeholder="Select Primary Role"
+                      searchPlaceholder="Search 50+ roles (e.g. Drilling, Subsea, HSE)..."
+                      accentColor="#D4AF37"
+                      required
+                    />
                   </div>
 
                   <div>
