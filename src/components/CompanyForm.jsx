@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Briefcase, Building, Send, CheckCircle2 } from 'lucide-react';
 import { sendToGoogleSheets } from '../config/googleConfig';
 import SearchableSelect from './SearchableSelect';
-import { JOB_CATEGORIES } from '../data/jobData';
+import { JOB_CATEGORIES, WORKER_POSITIONS, JOBS_BY_CATEGORY } from '../data/jobData';
 
 export default function CompanyForm({ onSubmissionSuccess }) {
   const [formData, setFormData] = useState({
@@ -11,9 +11,9 @@ export default function CompanyForm({ onSubmissionSuccess }) {
     email: '',
     phone: '',
     country: 'Kuwait',
+    jobCategory: 'Construction & Civil',
     jobTitle: '',
     workersNeeded: '1-5 Workers',
-    jobCategory: 'Drilling & Well Operations',
     projectLocation: '',
     message: ''
   });
@@ -21,6 +21,10 @@ export default function CompanyForm({ onSubmissionSuccess }) {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const availableRoles = formData.jobCategory && JOBS_BY_CATEGORY[formData.jobCategory]
+    ? JOBS_BY_CATEGORY[formData.jobCategory]
+    : WORKER_POSITIONS;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -64,13 +68,13 @@ export default function CompanyForm({ onSubmissionSuccess }) {
 
           <div>
             <div className="badge-orange" style={{ marginBottom: '1rem' }}>
-              FOR ENERGY EMPLOYERS
+              FOR EMPLOYERS & ENTERPRISES
             </div>
             <h2 style={{ color: 'var(--color-navy-950)', marginBottom: '1.25rem' }}>
-              Request Certified Energy <span style={{ color: 'var(--color-orange-primary)' }}>Workforce Talent</span>
+              Request Certified <span style={{ color: 'var(--color-orange-primary)' }}>Workforce Talent</span>
             </h2>
             <p style={{ color: 'var(--color-gray-600)', fontSize: '1.1rem', lineHeight: 1.6, marginBottom: '2rem' }}>
-              Partner with NGTKWT to rapidly mobilize pre-screened, OPITO & BOSIET certified technicians, engineers, and project leads tailored to your site requirements.
+              Partner with NGTKWT to rapidly mobilize pre-screened engineers, supervisors, technicians, and specialized workforce tailored to your site requirements.
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '2.5rem' }}>
@@ -129,9 +133,9 @@ export default function CompanyForm({ onSubmissionSuccess }) {
                       email: '',
                       phone: '',
                       country: 'Kuwait',
+                      jobCategory: 'Construction & Civil',
                       jobTitle: '',
                       workersNeeded: '1-5 Workers',
-                      jobCategory: 'Drilling & Well Operations',
                       projectLocation: '',
                       message: ''
                     });
@@ -172,7 +176,7 @@ export default function CompanyForm({ onSubmissionSuccess }) {
                     </label>
                     <input
                       type="text"
-                      placeholder="e.g. SLB / KOC / Halliburton"
+                      placeholder="e.g. Contracting / Engineering / Enterprise Co."
                       value={formData.companyName}
                       onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
                       style={{
@@ -273,22 +277,30 @@ export default function CompanyForm({ onSubmissionSuccess }) {
 
                   <div>
                     <label style={{ display: 'block', color: 'var(--color-navy-950)', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>
+                      Job Category
+                    </label>
+                    <SearchableSelect
+                      options={JOB_CATEGORIES}
+                      value={formData.jobCategory}
+                      onChange={(val) => setFormData({ ...formData, jobCategory: val, jobTitle: '' })}
+                      placeholder="Select Job Category"
+                      searchPlaceholder="Search 20+ categories (e.g. Construction, Mechanical, IT)..."
+                      accentColor="#D4AF37"
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', color: 'var(--color-navy-950)', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>
                       Job Title Needed *
                     </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Lead Drilling Rig Engineer"
+                    <SearchableSelect
+                      options={availableRoles}
                       value={formData.jobTitle}
-                      onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
-                      style={{
-                        width: '100%',
-                        padding: '0.75rem 1rem',
-                        borderRadius: '0.5rem',
-                        background: '#FFFFFF',
-                        border: '1px solid #CBD5E1',
-                        color: 'var(--color-navy-950)',
-                        outline: 'none'
-                      }}
+                      onChange={(val) => setFormData({ ...formData, jobTitle: val })}
+                      placeholder="Select Role Needed"
+                      searchPlaceholder="Search 200+ roles (e.g. Civil Engineer, Electrician, Project Manager)..."
+                      accentColor="#D4AF37"
+                      required
                     />
                   </div>
 
@@ -316,29 +328,15 @@ export default function CompanyForm({ onSubmissionSuccess }) {
                     </select>
                   </div>
 
-                  <div>
-                    <label style={{ display: 'block', color: 'var(--color-navy-950)', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>
-                      Job Category
-                    </label>
-                    <SearchableSelect
-                      options={JOB_CATEGORIES}
-                      value={formData.jobCategory}
-                      onChange={(val) => setFormData({ ...formData, jobCategory: val })}
-                      placeholder="Select Job Category"
-                      searchPlaceholder="Search 50+ categories (e.g. Drilling, Subsea, Refinery)..."
-                      accentColor="#D4AF37"
-                    />
-                  </div>
-
                 </div>
 
                 <div style={{ marginTop: '1.25rem' }}>
                   <label style={{ display: 'block', color: 'var(--color-navy-950)', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>
-                    Project Location / Rig Site
+                    Project Location / Site
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. Burgan Oil Field / Offshore Block 4"
+                    placeholder="e.g. Project Site / Industrial Zone / Kuwait City"
                     value={formData.projectLocation}
                     onChange={(e) => setFormData({ ...formData, projectLocation: e.target.value })}
                     style={{
@@ -359,7 +357,7 @@ export default function CompanyForm({ onSubmissionSuccess }) {
                   </label>
                   <textarea
                     rows="3"
-                    placeholder="Detail certifications required (OPITO/BOSIET), shift duration, start date..."
+                    placeholder="Detail certifications required, experience needed, shift duration, start date..."
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                     style={{

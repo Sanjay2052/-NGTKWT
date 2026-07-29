@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { UserCheck, Upload, CheckCircle2, Send, AlertCircle, Paperclip } from 'lucide-react';
 import { sendToGoogleSheets } from '../config/googleConfig';
 import SearchableSelect from './SearchableSelect';
-import { WORKER_POSITIONS } from '../data/jobData';
+import { WORKER_POSITIONS, JOB_CATEGORIES, JOBS_BY_CATEGORY } from '../data/jobData';
 
 export default function WorkerForm({ onSubmissionSuccess }) {
   const [formData, setFormData] = useState({
@@ -10,6 +10,7 @@ export default function WorkerForm({ onSubmissionSuccess }) {
     email: '',
     phone: '',
     nationality: '',
+    category: '',
     position: '',
     yearsExperience: '5-10 Years',
     certifications: ''
@@ -20,6 +21,10 @@ export default function WorkerForm({ onSubmissionSuccess }) {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const availablePositions = formData.category && JOBS_BY_CATEGORY[formData.category]
+    ? JOBS_BY_CATEGORY[formData.category]
+    : WORKER_POSITIONS;
 
   const readFileAsBase64 = (file) => {
     return new Promise((resolve, reject) => {
@@ -151,7 +156,7 @@ export default function WorkerForm({ onSubmissionSuccess }) {
                   Application Submitted!
                 </h3>
                 <p style={{ color: 'var(--color-gray-600)', fontSize: '1rem', marginBottom: '2rem' }}>
-                  Your profile and CV have been safely stored in our global talent database. Our technical recruiters will review your credentials for active oilfield deployments.
+                  Your profile and CV have been safely stored in our global talent database. Our technical recruiters will review your credentials for active project deployments.
                 </p>
                 <button
                   onClick={() => {
@@ -163,6 +168,7 @@ export default function WorkerForm({ onSubmissionSuccess }) {
                       email: '',
                       phone: '',
                       nationality: '',
+                      category: '',
                       position: '',
                       yearsExperience: '5-10 Years',
                       certifications: ''
@@ -179,7 +185,7 @@ export default function WorkerForm({ onSubmissionSuccess }) {
                   Submit Your CV to Join Our Talent Network
                 </h3>
                 <p style={{ color: 'var(--color-steel-grey)', fontSize: '0.85rem', marginBottom: '1.75rem' }}>
-                  Connect your technical profile with enterprise oil & gas companies worldwide.
+                  Connect your professional profile with top employers and global enterprises.
                 </p>
 
                 {error && (
@@ -287,14 +293,28 @@ export default function WorkerForm({ onSubmissionSuccess }) {
 
                   <div>
                     <label style={{ display: 'block', color: 'var(--color-navy-950)', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>
+                      Job Category
+                    </label>
+                    <SearchableSelect
+                      options={JOB_CATEGORIES}
+                      value={formData.category}
+                      onChange={(val) => setFormData({ ...formData, category: val, position: '' })}
+                      placeholder="Filter by Category (Optional)"
+                      searchPlaceholder="Search 20+ categories (e.g. Construction, Mechanical, IT)..."
+                      accentColor="#D4AF37"
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', color: 'var(--color-navy-950)', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>
                       Position Applying For *
                     </label>
                     <SearchableSelect
-                      options={WORKER_POSITIONS}
+                      options={availablePositions}
                       value={formData.position}
                       onChange={(val) => setFormData({ ...formData, position: val })}
                       placeholder="Select Primary Role"
-                      searchPlaceholder="Search 50+ roles (e.g. Drilling, Subsea, HSE)..."
+                      searchPlaceholder="Search 200+ roles (e.g. Civil Engineer, Electrician, HVAC)..."
                       accentColor="#D4AF37"
                       required
                     />
@@ -328,7 +348,7 @@ export default function WorkerForm({ onSubmissionSuccess }) {
 
                 <div style={{ marginTop: '1.25rem' }}>
                   <label style={{ display: 'block', color: 'var(--color-navy-950)', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>
-                    Certifications Held (e.g. OPITO, BOSIET, NEBOSH, IWCF, OGUK)
+                    Certifications Held (e.g. PMP, NEBOSH, ISO, AWS, Trade License)
                   </label>
                   <input
                     type="text"
@@ -437,7 +457,7 @@ export default function WorkerForm({ onSubmissionSuccess }) {
               Showcase Your Expertise to <span style={{ color: 'var(--color-gold-primary)' }}>Industry Leaders</span>
             </h2>
             <p style={{ color: 'var(--color-steel-grey)', fontSize: '1.1rem', lineHeight: 1.6, marginBottom: '2rem' }}>
-              NGTKWT provides a platform for qualified offshore rig professionals, subsea specialists, safety leads, and refinery technicians to connect with energy corporations across GCC, Europe, and international markets.
+              NGTKWT provides a platform for qualified engineers, supervisors, technicians, and skilled professionals across Construction, Mechanical, Electrical, IT, Logistics, Oil & Gas, and multi-industry sectors to connect with top corporations across GCC and international markets.
             </p>
 
             <div style={{
@@ -454,9 +474,9 @@ export default function WorkerForm({ onSubmissionSuccess }) {
                 <UserCheck size={20} style={{ color: 'var(--color-gold-primary)' }} /> Why Join NGTKWT Network?
               </h4>
               <ul style={{ color: 'var(--color-steel-grey)', fontSize: '0.9rem', paddingLeft: '1.25rem', lineHeight: 1.7 }}>
-                <li>Direct visibility with top energy operators & EPC clients</li>
+                <li>Direct visibility with top enterprise operators & EPC clients</li>
                 <li>Verified profile presentation for specialized technical roles</li>
-                <li>Cross-border exposure to international energy initiatives</li>
+                <li>Cross-border exposure to international industry projects</li>
                 <li>Fast & secure candidate CV submission process</li>
               </ul>
             </div>
