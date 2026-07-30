@@ -533,9 +533,6 @@ export default function WorkerForm({ onSubmissionSuccess }) {
                         <div style={{ color: 'var(--color-navy-950)', fontWeight: 600, fontSize: '0.9rem' }}>
                           {cvFile ? cvFile.name : 'Click or Drag CV file here to upload'}
                         </div>
-                        <div style={{ color: 'var(--color-gray-600)', fontSize: '0.75rem', marginTop: '0.2rem' }}>
-                          {cvFile ? `${(cvFile.size / 1024 / 1024).toFixed(2)} MB Attached` : 'PDF, DOC, DOCX up to 10MB'}
-                        </div>
                       </>
                     )}
                   </div>
