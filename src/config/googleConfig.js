@@ -1,6 +1,5 @@
 // Google Apps Script Webhook Configuration
-// Paste your Google Apps Script Web App URL here after deploying your script.
-export const GOOGLE_SCRIPT_WEBHOOK_URL = ""; 
+export const GOOGLE_SCRIPT_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbygXSrFqTERp16T3hyJag5arpaBPlUS0TsjPXUDxzU5ZDozfoQLGZl-kCL1tjDiCxjlhQ/exec"; 
 
 /**
  * Send submission data to Google Apps Script (Google Sheets & Google Drive)
@@ -12,11 +11,11 @@ export async function sendToGoogleSheets(payload) {
   }
 
   try {
-    const response = await fetch(GOOGLE_SCRIPT_WEBHOOK_URL, {
+    await fetch(GOOGLE_SCRIPT_WEBHOOK_URL, {
       method: "POST",
-      mode: "no-cors", // Allows cross-origin post to Google Apps Script Web App
+      mode: "no-cors",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "text/plain;charset=utf-8",
       },
       body: JSON.stringify(payload),
     });

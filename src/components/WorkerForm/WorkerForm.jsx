@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { UserCheck, Upload, CheckCircle2, Send, AlertCircle, Paperclip } from 'lucide-react';
+import { UserCheck, Upload, CheckCircle2, Send, AlertCircle, Paperclip, Loader2, FileCheck, Zap } from 'lucide-react';
 import { sendToGoogleSheets } from '../../config/googleConfig';
 import SearchableSelect from '../Common/SearchableSelect';
 import { WORKER_POSITIONS, JOB_CATEGORIES, JOBS_BY_CATEGORY } from '../../data/jobData';
-import { validateWorkerForm } from './WorkerValidation';
+import { validateWorkerForm, formatKuwaitPhone, getKuwaitFormattedDateTime } from './WorkerValidation';
+import { compressFileIfNeeded } from '../../utils/fileCompressor';
 import './WorkerForm.css';
 
 export default function WorkerForm({ onSubmissionSuccess }) {
@@ -14,27 +15,37 @@ export default function WorkerForm({ onSubmissionSuccess }) {
     nationality: '',
     category: '',
     position: '',
-    yearsExperience: '5-10 Years',
+    yearsExperience: '',
     certifications: ''
   });
 
   const [cvFile, setCvFile] = useState(null);
+  const [cvCompressing, setCvCompressing] = useState(false);
+  const [cvStatus, setCvStatus] = useState('');
+  const [cvStats, setCvStats] = useState(null);
+
   const [certFile, setCertFile] = useState(null);
+  const [certCompressing, setCertCompressing] = useState(false);
+  const [certStatus, setCertStatus] = useState('');
+  const [certStats, setCertStats] = useState(null);
+
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [errorField, setErrorField] = useState('');
 
   const availablePositions = formData.category && JOBS_BY_CATEGORY[formData.category]
     ? JOBS_BY_CATEGORY[formData.category]
     : WORKER_POSITIONS;
 
   const readFileAsBase64 = (file) => {
+    if (!file) return Promise.resolve(null);
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve({
         name: file.name,
         size: (file.size / 1024 / 1024).toFixed(2) + ' MB',
-        type: file.type,
+        type: file.type || 'application/pdf',
         data: reader.result
       });
       reader.onerror = error => reject(error);
@@ -42,52 +53,86 @@ export default function WorkerForm({ onSubmissionSuccess }) {
     });
   };
 
-  const handleCvChange = (e) => {
+  const handleCvChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
-    if (file.size > 10 * 1024 * 1024) {
-      setError('CV File size exceeds maximum limit of 10MB.');
-      return;
-    }
 
     const allowed = ['pdf', 'doc', 'docx'];
     const ext = file.name.split('.').pop().toLowerCase();
     if (!allowed.includes(ext)) {
       setError('Invalid file format. Please upload a PDF, DOC, or DOCX document.');
+      setErrorField('cvFile');
       return;
     }
 
     setError('');
-    setCvFile(file);
+    setErrorField('');
+    setCvCompressing(true);
+    setCvStatus(`Optimizing ${file.name}...`);
+
+    try {
+      const result = await compressFileIfNeeded(file, (msg) => setCvStatus(msg));
+      setCvFile(result.file);
+      setCvStats(result);
+    } catch (err) {
+      console.error('CV Compression Error:', err);
+      setCvFile(file);
+    } finally {
+      setCvCompressing(false);
+      setCvStatus('');
+    }
   };
 
-  const handleCertChange = (e) => {
+  const handleCertChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    if (file.size > 10 * 1024 * 1024) {
-      setError('Certificates file size exceeds 10MB.');
-      return;
-    }
     setError('');
-    setCertFile(file);
+    setErrorField('');
+    setCertCompressing(true);
+    setCertStatus(`Optimizing ${file.name}...`);
+
+    try {
+      const result = await compressFileIfNeeded(file, (msg) => setCertStatus(msg));
+      setCertFile(result.file);
+      setCertStats(result);
+    } catch (err) {
+      console.error('Certificate Compression Error:', err);
+      setCertFile(file);
+    } finally {
+      setCertCompressing(false);
+      setCertStatus('');
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setErrorField('');
 
-    const validationError = validateWorkerForm(formData, cvFile);
-    if (validationError) {
-      setError(validationError);
+    const valResult = validateWorkerForm(formData, cvFile);
+    if (valResult) {
+      setError(valResult.message);
+      setErrorField(valResult.field);
+
+      const targetEl = document.getElementById(`field-${valResult.field}`);
+      if (targetEl) {
+        targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const inputEl = targetEl.querySelector('input, select, button') || targetEl;
+        if (inputEl && inputEl.focus) {
+          setTimeout(() => inputEl.focus(), 350);
+        }
+      }
       return;
     }
 
     setLoading(true);
 
     try {
-      const cvBase64 = await readFileAsBase64(cvFile);
+      let cvBase64 = null;
+      if (cvFile) {
+        cvBase64 = await readFileAsBase64(cvFile);
+      }
       let certBase64 = null;
       if (certFile) {
         certBase64 = await readFileAsBase64(certFile);
@@ -95,26 +140,32 @@ export default function WorkerForm({ onSubmissionSuccess }) {
 
       const application = {
         id: `APP-${Date.now().toString().slice(-6)}`,
-        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+        date: getKuwaitFormattedDateTime(),
         type: 'worker',
         status: 'Unscreened',
         ...formData,
+        phone: formatKuwaitPhone(formData.phone),
         cv: cvBase64,
         certDoc: certBase64
       };
 
-      const existing = JSON.parse(localStorage.getItem('ngtkwt_candidate_apps') || '[]');
-      existing.unshift(application);
-      localStorage.setItem('ngtkwt_candidate_apps', JSON.stringify(existing));
-
-      await sendToGoogleSheets(application);
+      // Asynchronous background sync to Google Sheets (non-blocking for fast UI)
+      sendToGoogleSheets(application).catch(err => console.error('Background sync error:', err));
 
       setLoading(false);
       setSubmitted(true);
       if (onSubmissionSuccess) onSubmissionSuccess('Job Application Received');
+
+      setTimeout(() => {
+        const cardEl = document.getElementById('worker-form-card') || document.getElementById('jobseekers');
+        if (cardEl) {
+          cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
     } catch (err) {
+      console.error('Submission error:', err);
       setLoading(false);
-      setError('Failed to process file upload. Please try again.');
+      setError(err?.message || 'Failed to process file upload. Please try again.');
     }
   };
 
@@ -128,7 +179,7 @@ export default function WorkerForm({ onSubmissionSuccess }) {
 
         <div style={{ alignItems: 'center' }} className="form-grid">
 
-          <div style={{
+          <div id="worker-form-card" style={{
             padding: 'clamp(0.9rem, 3vw, 2.5rem)',
             background: '#FFFFFF',
             border: '1px solid #E2E8F0',
@@ -161,6 +212,8 @@ export default function WorkerForm({ onSubmissionSuccess }) {
                     setSubmitted(false);
                     setCvFile(null);
                     setCertFile(null);
+                    setError('');
+                    setErrorField('');
                     setFormData({
                       fullName: '',
                       email: '',
@@ -168,7 +221,7 @@ export default function WorkerForm({ onSubmissionSuccess }) {
                       nationality: '',
                       category: '',
                       position: '',
-                      yearsExperience: '5-10 Years',
+                      yearsExperience: '',
                       certifications: ''
                     });
                   }}
@@ -178,7 +231,7 @@ export default function WorkerForm({ onSubmissionSuccess }) {
                 </button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit}>
+              <form noValidate onSubmit={handleSubmit}>
                 <h3 style={{ color: 'var(--color-navy-950)', fontSize: '1.4rem', marginBottom: '0.5rem' }}>
                   Submit Your CV to Join Our Talent Network
                 </h3>
@@ -186,26 +239,9 @@ export default function WorkerForm({ onSubmissionSuccess }) {
                   Connect your professional profile with top employers and global enterprises.
                 </p>
 
-                {error && (
-                  <div style={{
-                    background: 'rgba(239, 68, 68, 0.1)',
-                    border: '1px solid rgba(239, 68, 68, 0.3)',
-                    color: '#DC2626',
-                    padding: '0.75rem 1rem',
-                    borderRadius: '0.5rem',
-                    fontSize: '0.875rem',
-                    marginBottom: '1.25rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem'
-                  }}>
-                    <AlertCircle size={18} /> {error}
-                  </div>
-                )}
-
                 <div className="form-subgrid">
 
-                  <div>
+                  <div id="field-fullName">
                     <label style={{ display: 'block', color: 'var(--color-navy-950)', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>
                       Full Name *
                     </label>
@@ -213,20 +249,30 @@ export default function WorkerForm({ onSubmissionSuccess }) {
                       type="text"
                       placeholder="e.g. Robert Sterling"
                       value={formData.fullName}
-                      onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                      onChange={(e) => {
+                        setFormData({ ...formData, fullName: e.target.value });
+                        if (errorField === 'fullName') setErrorField('');
+                      }}
                       style={{
                         width: '100%',
                         padding: '0.75rem 1rem',
                         borderRadius: '0.5rem',
                         background: '#FFFFFF',
-                        border: '1px solid #CBD5E1',
+                        border: errorField === 'fullName' ? '2px solid #EF4444' : '1px solid #CBD5E1',
+                        boxShadow: errorField === 'fullName' ? '0 0 0 3px rgba(239, 68, 68, 0.15)' : 'none',
                         color: 'var(--color-navy-950)',
-                        outline: 'none'
+                        outline: 'none',
+                        transition: 'all 0.2s ease'
                       }}
                     />
+                    {errorField === 'fullName' && (
+                      <div style={{ color: '#DC2626', fontSize: '0.75rem', fontWeight: 500, marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                        <AlertCircle size={13} /> {error}
+                      </div>
+                    )}
                   </div>
 
-                  <div>
+                  <div id="field-email">
                     <label style={{ display: 'block', color: 'var(--color-navy-950)', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>
                       Email Address *
                     </label>
@@ -234,204 +280,312 @@ export default function WorkerForm({ onSubmissionSuccess }) {
                       type="email"
                       placeholder="robert@example.com"
                       value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      onChange={(e) => {
+                        setFormData({ ...formData, email: e.target.value });
+                        if (errorField === 'email') setErrorField('');
+                      }}
                       style={{
                         width: '100%',
                         padding: '0.75rem 1rem',
                         borderRadius: '0.5rem',
                         background: '#FFFFFF',
-                        border: '1px solid #CBD5E1',
+                        border: errorField === 'email' ? '2px solid #EF4444' : '1px solid #CBD5E1',
+                        boxShadow: errorField === 'email' ? '0 0 0 3px rgba(239, 68, 68, 0.15)' : 'none',
                         color: 'var(--color-navy-950)',
-                        outline: 'none'
+                        outline: 'none',
+                        transition: 'all 0.2s ease'
                       }}
                     />
+                    {errorField === 'email' && (
+                      <div style={{ color: '#DC2626', fontSize: '0.75rem', fontWeight: 500, marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                        <AlertCircle size={13} /> {error}
+                      </div>
+                    )}
                   </div>
 
-                  <div>
+                  <div id="field-phone">
                     <label style={{ display: 'block', color: 'var(--color-navy-950)', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>
                       Phone / Mobile *
                     </label>
                     <input
                       type="tel"
-                      placeholder="+44 7911 123456"
+                      placeholder="+965 9876 5432"
+                      maxLength={formData.phone.startsWith('+') ? 16 : 9}
                       value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      onChange={(e) => {
+                        setFormData({ ...formData, phone: e.target.value });
+                        if (errorField === 'phone') setErrorField('');
+                      }}
                       style={{
                         width: '100%',
                         padding: '0.75rem 1rem',
                         borderRadius: '0.5rem',
                         background: '#FFFFFF',
-                        border: '1px solid #CBD5E1',
+                        border: errorField === 'phone' ? '2px solid #EF4444' : '1px solid #CBD5E1',
+                        boxShadow: errorField === 'phone' ? '0 0 0 3px rgba(239, 68, 68, 0.15)' : 'none',
                         color: 'var(--color-navy-950)',
-                        outline: 'none'
+                        outline: 'none',
+                        transition: 'all 0.2s ease'
                       }}
                     />
+                    {errorField === 'phone' && (
+                      <div style={{ color: '#DC2626', fontSize: '0.75rem', fontWeight: 500, marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                        <AlertCircle size={13} /> {error}
+                      </div>
+                    )}
                   </div>
 
-                  <div>
+                  <div id="field-nationality">
                     <label style={{ display: 'block', color: 'var(--color-navy-950)', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>
-                      Nationality
+                      Nationality *
                     </label>
                     <input
                       type="text"
                       placeholder="British / Kuwaiti / Indian..."
                       value={formData.nationality}
-                      onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
+                      onChange={(e) => {
+                        setFormData({ ...formData, nationality: e.target.value });
+                        if (errorField === 'nationality') setErrorField('');
+                      }}
                       style={{
                         width: '100%',
                         padding: '0.75rem 1rem',
                         borderRadius: '0.5rem',
                         background: '#FFFFFF',
-                        border: '1px solid #CBD5E1',
+                        border: errorField === 'nationality' ? '2px solid #EF4444' : '1px solid #CBD5E1',
+                        boxShadow: errorField === 'nationality' ? '0 0 0 3px rgba(239, 68, 68, 0.15)' : 'none',
                         color: 'var(--color-navy-950)',
-                        outline: 'none'
+                        outline: 'none',
+                        transition: 'all 0.2s ease'
                       }}
                     />
+                    {errorField === 'nationality' && (
+                      <div style={{ color: '#DC2626', fontSize: '0.75rem', fontWeight: 500, marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                        <AlertCircle size={13} /> {error}
+                      </div>
+                    )}
                   </div>
 
-                  <div>
+                  <div id="field-category" style={{
+                    borderRadius: '0.5rem',
+                    border: errorField === 'category' ? '2px solid #EF4444' : 'none',
+                    boxShadow: errorField === 'category' ? '0 0 0 3px rgba(239, 68, 68, 0.15)' : 'none',
+                    padding: errorField === 'category' ? '2px' : '0',
+                    transition: 'all 0.2s ease'
+                  }}>
                     <label style={{ display: 'block', color: 'var(--color-navy-950)', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>
-                      Job Category
+                      Job Category *
                     </label>
                     <SearchableSelect
                       options={JOB_CATEGORIES}
                       value={formData.category}
-                      onChange={(val) => setFormData({ ...formData, category: val, position: '' })}
-                      placeholder="Filter by Category (Optional)"
+                      onChange={(val) => {
+                        setFormData({ ...formData, category: val, position: '' });
+                        if (errorField === 'category') setErrorField('');
+                      }}
+                      placeholder="Select Job Category *"
                       searchPlaceholder="Search 20+ categories (e.g. Construction, Mechanical, IT)..."
                       accentColor="#D4AF37"
                     />
+                    {errorField === 'category' && (
+                      <div style={{ color: '#DC2626', fontSize: '0.75rem', fontWeight: 500, marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                        <AlertCircle size={13} /> {error}
+                      </div>
+                    )}
                   </div>
 
-                  <div>
+                  <div id="field-position" style={{
+                    borderRadius: '0.5rem',
+                    border: errorField === 'position' ? '2px solid #EF4444' : 'none',
+                    boxShadow: errorField === 'position' ? '0 0 0 3px rgba(239, 68, 68, 0.15)' : 'none',
+                    padding: errorField === 'position' ? '2px' : '0',
+                    transition: 'all 0.2s ease'
+                  }}>
                     <label style={{ display: 'block', color: 'var(--color-navy-950)', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>
                       Position Applying For *
                     </label>
                     <SearchableSelect
                       options={availablePositions}
                       value={formData.position}
-                      onChange={(val) => setFormData({ ...formData, position: val })}
-                      placeholder="Select Primary Role"
+                      onChange={(val) => {
+                        setFormData({ ...formData, position: val });
+                        if (errorField === 'position') setErrorField('');
+                      }}
+                      placeholder="Select Primary Role *"
                       searchPlaceholder="Search 200+ roles (e.g. Civil Engineer, Electrician, HVAC)..."
                       accentColor="#D4AF37"
-                      required
                     />
+                    {errorField === 'position' && (
+                      <div style={{ color: '#DC2626', fontSize: '0.75rem', fontWeight: 500, marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                        <AlertCircle size={13} /> {error}
+                      </div>
+                    )}
                   </div>
 
-                  <div>
+                  <div id="field-yearsExperience">
                     <label style={{ display: 'block', color: 'var(--color-navy-950)', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>
-                      Years of Experience
+                      Years of Experience *
                     </label>
                     <select
                       value={formData.yearsExperience}
-                      onChange={(e) => setFormData({ ...formData, yearsExperience: e.target.value })}
+                      onChange={(e) => {
+                        setFormData({ ...formData, yearsExperience: e.target.value });
+                        if (errorField === 'yearsExperience') setErrorField('');
+                      }}
                       style={{
                         width: '100%',
                         padding: '0.75rem 1rem',
                         borderRadius: '0.5rem',
                         background: '#FFFFFF',
-                        border: '1px solid #CBD5E1',
+                        border: errorField === 'yearsExperience' ? '2px solid #EF4444' : '1px solid #CBD5E1',
+                        boxShadow: errorField === 'yearsExperience' ? '0 0 0 3px rgba(239, 68, 68, 0.15)' : 'none',
                         color: 'var(--color-navy-950)',
-                        outline: 'none'
+                        outline: 'none',
+                        transition: 'all 0.2s ease'
                       }}
                     >
+                      <option value="">Select Experience Level *</option>
                       <option value="1-3 Years">1 - 3 Years</option>
                       <option value="3-5 Years">3 - 5 Years</option>
                       <option value="5-10 Years">5 - 10 Years</option>
                       <option value="10+ Years">10+ Senior Expert</option>
                     </select>
+                    {errorField === 'yearsExperience' && (
+                      <div style={{ color: '#DC2626', fontSize: '0.75rem', fontWeight: 500, marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                        <AlertCircle size={13} /> {error}
+                      </div>
+                    )}
                   </div>
 
                 </div>
 
-                <div style={{ marginTop: '1.25rem' }}>
+                <div id="field-certifications" style={{ marginTop: '1.25rem' }}>
                   <label style={{ display: 'block', color: 'var(--color-navy-950)', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>
-                    Certifications Held (e.g. PMP, NEBOSH, ISO, AWS, Trade License)
+                    Certifications Held (e.g. PMP, NEBOSH, ISO, AWS, Trade License) *
                   </label>
                   <input
                     type="text"
                     placeholder="List certificates & expiry dates"
                     value={formData.certifications}
-                    onChange={(e) => setFormData({ ...formData, certifications: e.target.value })}
+                    onChange={(e) => {
+                      setFormData({ ...formData, certifications: e.target.value });
+                      if (errorField === 'certifications') setErrorField('');
+                    }}
                     style={{
                       width: '100%',
                       padding: '0.75rem 1rem',
                       borderRadius: '0.5rem',
                       background: '#FFFFFF',
-                      border: '1px solid #CBD5E1',
+                      border: errorField === 'certifications' ? '2px solid #EF4444' : '1px solid #CBD5E1',
+                      boxShadow: errorField === 'certifications' ? '0 0 0 3px rgba(239, 68, 68, 0.15)' : 'none',
                       color: 'var(--color-navy-950)',
-                      outline: 'none'
+                      outline: 'none',
+                      transition: 'all 0.2s ease'
                     }}
                   />
+                  {errorField === 'certifications' && (
+                    <div style={{ color: '#DC2626', fontSize: '0.75rem', fontWeight: 500, marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                      <AlertCircle size={13} /> {error}
+                    </div>
+                  )}
                 </div>
 
-                <div style={{ marginTop: '1.25rem' }}>
+                <div id="field-cvFile" style={{ marginTop: '1.25rem' }}>
                   <label style={{ display: 'block', color: 'var(--color-navy-950)', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>
                     Upload CV Document (PDF / DOC / DOCX, max 10MB) *
                   </label>
 
                   <div style={{
-                    border: '2px dashed rgba(249, 87, 56, 0.4)',
+                    border: errorField === 'cvFile' ? '2px solid #EF4444' : (cvFile ? '2px solid #22C55E' : '2px dashed rgba(249, 87, 56, 0.4)'),
+                    boxShadow: errorField === 'cvFile' ? '0 0 0 3px rgba(239, 68, 68, 0.15)' : 'none',
                     borderRadius: '0.75rem',
                     padding: '1.25rem',
                     textAlign: 'center',
-                    background: cvFile ? 'rgba(249, 87, 56, 0.05)' : '#F8FAFC',
+                    background: cvFile ? 'rgba(34, 197, 94, 0.03)' : '#F8FAFC',
                     cursor: 'pointer',
-                    position: 'relative'
+                    position: 'relative',
+                    transition: 'all 0.2s ease'
                   }}>
                     <input
                       type="file"
                       accept=".pdf,.doc,.docx"
                       onChange={handleCvChange}
+                      disabled={cvCompressing}
                       style={{
                         position: 'absolute',
                         inset: 0,
                         opacity: 0,
-                        cursor: 'pointer',
+                        cursor: cvCompressing ? 'wait' : 'pointer',
                         width: '100%',
                         height: '100%'
                       }}
                     />
-                    <Upload size={24} style={{ color: 'var(--color-orange-primary)', marginBottom: '0.5rem' }} />
-                    <div style={{ color: 'var(--color-navy-950)', fontWeight: 600, fontSize: '0.9rem' }}>
-                      {cvFile ? cvFile.name : 'Click or Drag CV file here to upload'}
-                    </div>
-                    <div style={{ color: 'var(--color-gray-600)', fontSize: '0.75rem', marginTop: '0.2rem' }}>
-                      {cvFile ? `${(cvFile.size / 1024 / 1024).toFixed(2)} MB Attached` : 'PDF, DOC, DOCX up to 10MB'}
-                    </div>
+                    {cvCompressing ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+                        <Loader2 size={26} className="spinner" style={{ color: 'var(--color-orange-primary)' }} />
+                        <div style={{ color: 'var(--color-navy-950)', fontWeight: 600, fontSize: '0.85rem' }}>
+                          Processing CV document...
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <Upload size={24} style={{ color: cvFile ? '#16A34A' : 'var(--color-orange-primary)', marginBottom: '0.5rem' }} />
+                        <div style={{ color: 'var(--color-navy-950)', fontWeight: 600, fontSize: '0.9rem' }}>
+                          {cvFile ? cvFile.name : 'Click or Drag CV file here to upload'}
+                        </div>
+                        <div style={{ color: 'var(--color-gray-600)', fontSize: '0.75rem', marginTop: '0.2rem' }}>
+                          {cvFile ? `${(cvFile.size / 1024 / 1024).toFixed(2)} MB Attached` : 'PDF, DOC, DOCX up to 10MB'}
+                        </div>
+                      </>
+                    )}
                   </div>
+                  {errorField === 'cvFile' && (
+                    <div style={{ color: '#DC2626', fontSize: '0.75rem', fontWeight: 500, marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                      <AlertCircle size={13} /> {error}
+                    </div>
+                  )}
                 </div>
 
-                <div style={{ marginTop: '1.25rem', marginBottom: '1.75rem' }}>
+                <div id="field-certFile" style={{ marginTop: '1.25rem', marginBottom: '1.75rem' }}>
                   <label style={{ display: 'block', color: 'var(--color-navy-950)', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>
                     Upload Certifications Document (Optional)
                   </label>
                   <div style={{
-                    border: '1px dashed #CBD5E1',
+                    border: certFile ? '1px solid #22C55E' : '1px dashed #CBD5E1',
                     borderRadius: '0.5rem',
                     padding: '0.75rem 1rem',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    background: '#FFFFFF',
+                    background: certFile ? 'rgba(34, 197, 94, 0.03)' : '#FFFFFF',
                     position: 'relative'
                   }}>
                     <input
                       type="file"
-                      accept=".pdf,.doc,.docx,.jpg,.png"
+                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                       onChange={handleCertChange}
+                      disabled={certCompressing}
                       style={{
                         position: 'absolute',
                         inset: 0,
                         opacity: 0,
-                        cursor: 'pointer'
+                        cursor: certCompressing ? 'wait' : 'pointer'
                       }}
                     />
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-gray-700)', fontSize: '0.85rem' }}>
-                      <Paperclip size={16} />
-                      <span>{certFile ? certFile.name : 'Attach certificates document (optional)'}</span>
-                    </div>
-                    <span style={{ color: 'var(--color-orange-primary)', fontSize: '0.75rem', fontWeight: 600 }}>Browse</span>
+                    {certCompressing ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-orange-primary)', fontSize: '0.85rem' }}>
+                        <Loader2 size={18} className="spinner" />
+                        <span>Processing certificate document...</span>
+                      </div>
+                    ) : (
+                      <>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-gray-700)', fontSize: '0.85rem', fontWeight: certFile ? 600 : 400 }}>
+                          <Paperclip size={16} style={{ color: certFile ? '#16A34A' : 'inherit' }} />
+                          <span>{certFile ? certFile.name : 'Attach certificates document (optional)'}</span>
+                        </div>
+                        <span style={{ color: 'var(--color-orange-primary)', fontSize: '0.75rem', fontWeight: 600 }}>Browse</span>
+                      </>
+                    )}
                   </div>
                 </div>
 
