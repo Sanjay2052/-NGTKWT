@@ -1,0 +1,11 @@
+.main-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #FFFFFF;
+  color: var(--color-navy-950);
+}
+
+.main-content {
+  flex: 1;
+}

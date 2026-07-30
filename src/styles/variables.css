@@ -1,0 +1,40 @@
+:root {
+  --color-navy-950: #0A2540;
+  --color-navy-900: #071D33;
+  --color-navy-800: #123356;
+  --color-navy-700: #1C4670;
+
+  --color-gold-primary: #D4AF37;
+  --color-gold-hover: #B5942B;
+  --color-gold-light: rgba(212, 175, 55, 0.12);
+  --color-gold-glow: rgba(212, 175, 55, 0.3);
+
+  --color-orange-primary: #D4AF37;
+  --color-orange-hover: #B5942B;
+  --color-orange-light: rgba(212, 175, 55, 0.12);
+  --color-orange-glow: rgba(212, 175, 55, 0.3);
+
+  --color-steel-grey: #5F6B7A;
+  --color-gray-50: #FFFFFF;
+  --color-gray-100: #F4F6F9;
+  --color-gray-200: #E6EBF0;
+  --color-gray-300: #D1D9E0;
+  --color-gray-400: #9AA6B5;
+  --color-gray-500: #7A8796;
+  --color-gray-600: #5F6B7A;
+  --color-gray-700: #434D59;
+  --color-gray-800: #0A2540;
+  --color-gray-900: #0A2540;
+
+  --font-heading: 'Outfit', 'Plus Jakarta Sans', -apple-system, sans-serif;
+  --font-body: 'Plus Jakarta Sans', -apple-system, sans-serif;
+
+  --shadow-sm: 0 1px 3px rgba(10, 37, 64, 0.05);
+  --shadow-md: 0 4px 16px rgba(10, 37, 64, 0.08);
+  --shadow-lg: 0 12px 28px rgba(10, 37, 64, 0.12);
+  --shadow-gold: 0 4px 20px rgba(212, 175, 55, 0.35);
+  --shadow-orange: 0 4px 20px rgba(212, 175, 55, 0.35);
+
+  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}

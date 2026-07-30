@@ -1,0 +1,4 @@
+@media (max-width: 1024px) {
+  .desktop-nav { display: none !important; }
+  .mobile-toggle { display: block !important; }
+}
