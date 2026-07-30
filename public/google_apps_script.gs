@@ -23,12 +23,12 @@ function getDriveFolder() {
     }
   }
 
-  // Auto-fallback: Find or create "NGTKWT Candidate CVs" folder automatically
-  const folders = DriveApp.getFoldersByName("NGTKWT Candidate CVs");
+  // Auto-fallback: Find or create "NGTKWT Talent & Hiring" folder automatically
+  const folders = DriveApp.getFoldersByName("NGTKWT Talent & Hiring");
   if (folders.hasNext()) {
     return folders.next();
   }
-  return DriveApp.createFolder("NGTKWT Candidate Documents");
+  return DriveApp.createFolder("NGTKWT Talent & Hiring");
 }
 
 function getSubFolder(parentFolder, folderName) {

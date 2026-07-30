@@ -1,5 +1,5 @@
 // Google Apps Script Webhook Configuration
-export const GOOGLE_SCRIPT_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbygXSrFqTERp16T3hyJag5arpaBPlUS0TsjPXUDxzU5ZDozfoQLGZl-kCL1tjDiCxjlhQ/exec"; 
+export const GOOGLE_SCRIPT_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbx7QjxgId1kzVrBr4DfuTtg1Csi2fz8Bbou5W4_uXtwpvaQstfpAhHMmKAPDymbMLNJ-A/exec"; 
 
 /**
  * Send submission data to Google Apps Script (Google Sheets & Google Drive)
