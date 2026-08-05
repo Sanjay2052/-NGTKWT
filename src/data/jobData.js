@@ -67,6 +67,21 @@ export const JOBS_BY_CATEGORY = {
     'Fire Watch',
     'Gas Tester'
   ],
+  'Land & Offshore Drilling': [
+    'Senior Tool Pusher',
+    'Night Tool Pusher',
+    'Driller',
+    'Assistant Driller',
+    'Derrickman',
+    'Floorman',
+    'Senior Electrician',
+    'Senior Mechanic',
+    'Mechanical Helper',
+    'Electrical Helper',
+    'Instrumentation Technician (IT)',
+    'Welder',
+    'Radio Operator'
+  ],
   'Manufacturing & Factory': [
     'Production Operator',
     'Assembly Technician',
@@ -151,6 +166,11 @@ export const JOBS_BY_CATEGORY = {
     'Accounts Assistant',
     'Procurement Officer',
     'Purchase Executive'
+  ],
+  'Human Resources & Administration': [
+    'HR Manager',
+    'HR Supervisor',
+    'HR Coordinator'
   ],
   'Sales & Marketing': [
     'Sales Executive',

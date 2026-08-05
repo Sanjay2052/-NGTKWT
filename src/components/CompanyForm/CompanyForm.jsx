@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Briefcase, Building, Send, CheckCircle2, AlertCircle } from 'lucide-react';
 import { sendToGoogleSheets } from '../../config/googleConfig';
 import SearchableSelect from '../Common/SearchableSelect';
+import PhoneInput from '../Common/PhoneInput';
 import { JOB_CATEGORIES, WORKER_POSITIONS, JOBS_BY_CATEGORY } from '../../data/jobData';
 import { formatKuwaitPhone, getKuwaitFormattedDateTime } from '../WorkerForm/WorkerValidation';
 import './CompanyForm.css';
@@ -46,10 +47,9 @@ export default function CompanyForm({ onSubmissionSuccess }) {
     if (!formData.phone || !formData.phone.trim()) {
       return { field: 'phone', message: 'Please enter your phone / WhatsApp number.' };
     }
-    const cleanCompPhone = formData.phone.replace(/[\s\-\(\)\+]/g, '');
-    const kuwaitCompNum = cleanCompPhone.replace(/^(00965|965)/, '');
-    if (!/^[569]\d{7}$/.test(kuwaitCompNum) || /^(\d)\1{7}$/.test(kuwaitCompNum)) {
-      return { field: 'phone', message: 'Please enter a valid Kuwait mobile number (8 digits starting with 5, 6, or 9, e.g. 98765432 or +965 9876 5432).' };
+    const cleanCompPhoneDigits = formData.phone.replace(/\D/g, '');
+    if (cleanCompPhoneDigits.length < 5 || cleanCompPhoneDigits.length > 15) {
+      return { field: 'phone', message: 'Please enter a valid phone / WhatsApp number (minimum 5 digits).' };
     }
     if (!formData.country || !formData.country.trim()) {
       return { field: 'country', message: 'Please enter country.' };
@@ -318,26 +318,14 @@ export default function CompanyForm({ onSubmissionSuccess }) {
                     <label style={{ display: 'block', color: 'var(--color-navy-950)', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>
                       Phone / WhatsApp *
                     </label>
-                    <input
-                      type="tel"
-                      placeholder="+965 9876 5432"
-                      maxLength={formData.phone.startsWith('+') ? 16 : 9}
+                    <PhoneInput
+                      id="comp-phone-input"
                       value={formData.phone}
-                      onChange={(e) => {
-                        setFormData({ ...formData, phone: e.target.value });
+                      onChange={(val) => {
+                        setFormData({ ...formData, phone: val });
                         if (errorField === 'phone') setErrorField('');
                       }}
-                      style={{
-                        width: '100%',
-                        padding: '0.75rem 1rem',
-                        borderRadius: '0.5rem',
-                        background: '#FFFFFF',
-                        border: errorField === 'phone' ? '2px solid #EF4444' : '1px solid #CBD5E1',
-                        boxShadow: errorField === 'phone' ? '0 0 0 3px rgba(239, 68, 68, 0.15)' : 'none',
-                        color: 'var(--color-navy-950)',
-                        outline: 'none',
-                        transition: 'all 0.2s ease'
-                      }}
+                      error={errorField === 'phone'}
                     />
                     {errorField === 'phone' && (
                       <div style={{ color: '#DC2626', fontSize: '0.75rem', fontWeight: 500, marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>

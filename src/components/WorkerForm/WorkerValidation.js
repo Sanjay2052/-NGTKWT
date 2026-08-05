@@ -14,10 +14,9 @@ export function validateWorkerForm(formData, cvFile) {
   if (!formData.phone || !formData.phone.trim()) {
     return { field: 'phone', message: 'Please enter your phone / mobile number.' };
   }
-  const cleanWorkerPhone = formData.phone.replace(/[\s\-\(\)\+]/g, '');
-  const kuwaitWorkerNum = cleanWorkerPhone.replace(/^(00965|965)/, '');
-  if (!/^[569]\d{7}$/.test(kuwaitWorkerNum) || /^(\d)\1{7}$/.test(kuwaitWorkerNum)) {
-    return { field: 'phone', message: 'Please enter a valid Kuwait mobile number (8 digits starting with 5, 6, or 9, e.g. 98765432 or +965 9876 5432).' };
+  const cleanPhoneDigits = formData.phone.replace(/\D/g, '');
+  if (cleanPhoneDigits.length < 5 || cleanPhoneDigits.length > 15) {
+    return { field: 'phone', message: 'Please enter a valid phone / mobile number (minimum 5 digits).' };
   }
 
   if (!formData.nationality || !formData.nationality.trim()) {
@@ -49,9 +48,18 @@ export function validateWorkerForm(formData, cvFile) {
 
 export function formatKuwaitPhone(phoneStr) {
   if (!phoneStr) return '';
-  const clean = phoneStr.trim().replace(/[\s\-\(\)\+]/g, '');
-  const local = clean.replace(/^(00965|965)/, '');
-  return `'+965 ${local}`;
+  const trimmed = phoneStr.trim();
+  if (trimmed.startsWith('+')) {
+    return `'${trimmed}`;
+  }
+  const clean = trimmed.replace(/[\s\-\(\)]/g, '');
+  if (/^00/.test(clean)) {
+    return `'+${clean.slice(2)}`;
+  }
+  if (clean.length === 8) {
+    return `'+965 ${clean}`;
+  }
+  return `'${trimmed}`;
 }
 
 export function getKuwaitFormattedDateTime() {

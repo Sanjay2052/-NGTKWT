@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { UserCheck, Upload, CheckCircle2, Send, AlertCircle, Paperclip, Loader2, FileCheck, Zap } from 'lucide-react';
 import { sendToGoogleSheets } from '../../config/googleConfig';
 import SearchableSelect from '../Common/SearchableSelect';
+import PhoneInput from '../Common/PhoneInput';
 import { WORKER_POSITIONS, JOB_CATEGORIES, JOBS_BY_CATEGORY } from '../../data/jobData';
 import { validateWorkerForm, formatKuwaitPhone, getKuwaitFormattedDateTime } from './WorkerValidation';
 import { compressFileIfNeeded } from '../../utils/fileCompressor';
@@ -307,26 +308,14 @@ export default function WorkerForm({ onSubmissionSuccess }) {
                     <label style={{ display: 'block', color: 'var(--color-navy-950)', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>
                       Phone / Mobile *
                     </label>
-                    <input
-                      type="tel"
-                      placeholder="+965 9876 5432"
-                      maxLength={formData.phone.startsWith('+') ? 16 : 9}
+                    <PhoneInput
+                      id="worker-phone-input"
                       value={formData.phone}
-                      onChange={(e) => {
-                        setFormData({ ...formData, phone: e.target.value });
+                      onChange={(val) => {
+                        setFormData({ ...formData, phone: val });
                         if (errorField === 'phone') setErrorField('');
                       }}
-                      style={{
-                        width: '100%',
-                        padding: '0.75rem 1rem',
-                        borderRadius: '0.5rem',
-                        background: '#FFFFFF',
-                        border: errorField === 'phone' ? '2px solid #EF4444' : '1px solid #CBD5E1',
-                        boxShadow: errorField === 'phone' ? '0 0 0 3px rgba(239, 68, 68, 0.15)' : 'none',
-                        color: 'var(--color-navy-950)',
-                        outline: 'none',
-                        transition: 'all 0.2s ease'
-                      }}
+                      error={errorField === 'phone'}
                     />
                     {errorField === 'phone' && (
                       <div style={{ color: '#DC2626', fontSize: '0.75rem', fontWeight: 500, marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
