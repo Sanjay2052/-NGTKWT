@@ -13,12 +13,22 @@ export const COUNTRY_CODES = [
   { code: '+880', country: 'Bangladesh', flag: '🇧🇩', placeholder: '1712 345678' },
   { code: '+94', country: 'Sri Lanka', flag: '🇱🇰', placeholder: '77 123 4567' },
   { code: '+63', country: 'Philippines', flag: '🇵🇭', placeholder: '917 123 4567' },
+  { code: '+86', country: 'China', flag: '🇨🇳', placeholder: '139 1234 5678' },
+  { code: '+93', country: 'Afghanistan', flag: '🇦🇫', placeholder: '70 123 4567' },
   { code: '+20', country: 'Egypt', flag: '🇪🇬', placeholder: '100 123 4567' },
+  { code: '+213', country: 'Algeria', flag: '🇩🇿', placeholder: '550 12 34 56' },
+  { code: '+212', country: 'Morocco', flag: '🇲🇦', placeholder: '612 345678' },
+  { code: '+216', country: 'Tunisia', flag: '🇹🇳', placeholder: '20 123 456' },
+  { code: '+234', country: 'Nigeria', flag: '🇳🇬', placeholder: '802 123 4567' },
+  { code: '+27', country: 'South Africa', flag: '🇿🇦', placeholder: '71 123 4567' },
+  { code: '+254', country: 'Kenya', flag: '🇰🇪', placeholder: '712 345 678' },
+  { code: '+233', country: 'Ghana', flag: '🇬🇭', placeholder: '24 123 4567' },
+  { code: '+251', country: 'Ethiopia', flag: '🇪🇹', placeholder: '91 123 4567' },
+  { code: '+255', country: 'Tanzania', flag: '🇹🇿', placeholder: '712 345 678' },
+  { code: '+256', country: 'Uganda', flag: '🇺🇬', placeholder: '712 345 678' },
   { code: '+962', country: 'Jordan', flag: '🇯🇴', placeholder: '7 9123 4567' },
   { code: '+961', country: 'Lebanon', flag: '🇱🇧', placeholder: '70 123 456' },
   { code: '+964', country: 'Iraq', flag: '🇮🇶', placeholder: '770 123 4567' },
-  { code: '+216', country: 'Tunisia', flag: '🇹🇳', placeholder: '20 123 456' },
-  { code: '+212', country: 'Morocco', flag: '🇲🇦', placeholder: '612 345678' },
   { code: '+44', country: 'UK', flag: '🇬🇧', placeholder: '7911 123456' },
   { code: '+1', country: 'USA / Canada', flag: '🇺🇸', placeholder: '202 555 0123' },
   { code: '+61', country: 'Australia', flag: '🇦🇺', placeholder: '412 345 678' },
@@ -281,7 +291,7 @@ export default function PhoneInput({ value = '', onChange, error = false, id }) 
                 const isSelected = item.code === selectedCode;
                 return (
                   <div
-                    key={item.code}
+                    key={`${item.code}-${item.country}`}
                     onClick={() => handleSelectCountry(item)}
                     style={{
                       padding: '0.6rem 0.85rem',
